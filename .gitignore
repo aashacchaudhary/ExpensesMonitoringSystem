@@ -9,21 +9,16 @@ venv/
 .codex_deps/
 staticfiles/
 
-# Your specific files
-.generate-structure.bat
-.copy_to_tmp.bat
-.tmp/
-
-# Your specific files
+# Batch scripts (ignore the ones without leading dots, since they exist)
 generate-structure.bat
 copy_to_tmp.bat
-tmp
 
+# Temporary folders
+.tmp/
+tmp/
+temp_tree.ps1
 
-
-# (Optional) Also ignore other common temporary files
+# Other temp files
 *.log
 *.pid
-
 FILE_STRUCTURE.md
-
