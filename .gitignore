@@ -9,3 +9,4 @@ venv/
 staticfiles/
 .generate-structure.bat
 .copy_to_tmp.bat
+.tmp/
