@@ -7,3 +7,5 @@ db.sqlite3
 venv/
 .codex_deps/
 staticfiles/
+.generate-structure.bat
+.copy_to_tmp.bat
