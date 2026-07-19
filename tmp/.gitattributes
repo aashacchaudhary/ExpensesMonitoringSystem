@@ -1,4 +1,0 @@
-# Remove the leading dots – they are incorrect
-generate-structure.bat
-copy_to_tmp.bat
-.tmp/
