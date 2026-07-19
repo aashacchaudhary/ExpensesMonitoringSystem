@@ -21,4 +21,4 @@ temp_tree.ps1
 # Other temp files
 *.log
 *.pid
-FILE_STRUCTURE.md
+#FILE_STRUCTURE.md
