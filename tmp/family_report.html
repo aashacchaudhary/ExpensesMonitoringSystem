@@ -1,0 +1,382 @@
+{% extends "expenses/base.html" %}
+
+{% block title %}Family - Expense Monitoring System{% endblock %}
+
+{% block content %}
+<main class="page-wrap">
+    <div class="page-header">
+        <div>
+            <div class="page-kicker">Family</div>
+            <h1 class="section-title">{{ selected_group.name }}</h1>
+            <p class="muted-copy mb-0">{{ selected_month }} {{ selected_year }} combined spending, family budget, and transaction statements.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'family_group' %}" class="btn btn-soft"><i class="bi bi-arrow-left"></i> Back</a>
+            <a href="{% url 'family_report' %}?{{ report_query }}&download=pdf" class="btn btn-soft"><i class="bi bi-file-earmark-pdf"></i> Report PDF</a>
+            <a href="{% url 'family_report' %}?{{ report_query }}&download=csv" class="btn btn-soft"><i class="bi bi-filetype-csv"></i> Report CSV</a>
+        </div>
+    </div>
+
+    {% for alert in family_budget_alerts %}
+        <div class="alert alert-{{ alert.level }}" role="alert">{{ alert.message }}</div>
+    {% endfor %}
+
+    <div class="expense-card filter-card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label" for="family_group">Family group</label>
+                    <select class="form-select" id="family_group" name="family_group">
+                        {% for group in family_groups %}
+                            <option value="{{ group.pk }}" {% if group.pk == selected_group.pk %}selected{% endif %}>{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="{{ form.month.id_for_label }}">Month</label>
+                    {{ form.month }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="{{ form.year.id_for_label }}">Year</label>
+                    {{ form.year }}
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" type="submit"><i class="bi bi-arrow-repeat"></i> View</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-xl-3">
+            <div class="expense-card metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="metric-label">Family Monthly Total</div>
+                            <div class="metric-value amount-expense">{{ total|floatformat:2 }}</div>
+                        </div>
+                        <span class="metric-icon"><i class="bi bi-house-heart"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="expense-card metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="metric-label">Family Budget</div>
+                            <div class="metric-value">{% if family_budget %}{{ family_budget.amount|floatformat:2 }}{% else %}-{% endif %}</div>
+                        </div>
+                        <span class="metric-icon"><i class="bi bi-wallet2"></i></span>
+                    </div>
+                    <div class="muted-copy small mt-2">{% if family_budget %}{{ family_budget_source_label }}{% else %}Not set{% endif %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="expense-card metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="metric-label">Family Remaining</div>
+                            <div class="metric-value {% if family_remaining_budget_negative %}amount-expense{% else %}amount-income{% endif %}">
+                                {% if family_remaining_budget is not None %}{{ family_remaining_budget|floatformat:2 }}{% else %}-{% endif %}
+                            </div>
+                        </div>
+                        <span class="metric-icon"><i class="bi bi-piggy-bank"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="expense-card metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="metric-label">Records</div>
+                            <div class="metric-value">{{ expenses|length }}</div>
+                        </div>
+                        <span class="metric-icon"><i class="bi bi-receipt"></i></span>
+                    </div>
+                    <div class="muted-copy small mt-2">{{ members|length }} member{% if members|length != 1 %}s{% endif %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-xl-5">
+            <div class="expense-card h-100">
+                <div class="card-body mood-card">
+                    <div class="mood-ring {{ family_budget_mood.state }}" style="--progress: {{ family_budget_mood.ring_percent|floatformat:0 }};">
+                        <strong>{{ family_budget_mood.used_percent|floatformat:0 }}%</strong>
+                        <span>Used</span>
+                    </div>
+                    <div>
+                        <div class="page-kicker">Family Budget Ring</div>
+                        <h2 class="h4 fw-bold mb-2">{{ family_budget_mood.label }}</h2>
+                        <p class="muted-copy mb-3">This family budget is separate from personal budgets and carries forward until the creator changes it.</p>
+                        <span class="mood-pill {{ family_budget_mood.state }}">{{ family_budget_mood.label }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-7">
+            <div class="expense-card h-100">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+                        <div>
+                            <h2 class="h5 fw-bold mb-1">Set family budget</h2>
+                            <p class="muted-copy small mb-0">Only the group creator can update the family budget. The latest saved amount carries forward month to month.</p>
+                        </div>
+                        <span class="soft-chip">Creator: {{ selected_group.created_by.username }}</span>
+                    </div>
+                    {% if is_group_creator %}
+                        <form method="post" class="row g-3 align-items-end" novalidate>
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="set_family_budget">
+                            <input type="hidden" name="family_group" value="{{ selected_group.pk }}">
+                            <div class="col-md-4">
+                                <label class="form-label" for="{{ family_budget_form.month.id_for_label }}">Month</label>
+                                {{ family_budget_form.month }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="{{ family_budget_form.year.id_for_label }}">Year</label>
+                                {{ family_budget_form.year }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="{{ family_budget_form.amount.id_for_label }}">Budget amount</label>
+                                {{ family_budget_form.amount }}
+                                {% for error in family_budget_form.amount.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary" type="submit"><i class="bi bi-save"></i> Save Family Budget</button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="empty-state mb-0">Ask {{ selected_group.created_by.username }} to set or update this family's monthly budget.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-xl-4">
+            <div class="expense-card h-100">
+                <div class="card-body">
+                    <h2 class="h5 fw-bold mb-1">Member-wise expense</h2>
+                    <p class="muted-copy small">Contribution by family member.</p>
+                    <div class="chart-box"><canvas id="familyMemberChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="expense-card h-100">
+                <div class="card-body">
+                    <h2 class="h5 fw-bold mb-1">Category-wise expense</h2>
+                    <p class="muted-copy small">Combined category flow.</p>
+                    <div class="chart-box"><canvas id="familyCategoryChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="expense-card h-100">
+                <div class="card-body">
+                    <h2 class="h5 fw-bold mb-1">Daily expense</h2>
+                    <p class="muted-copy small">Daily household movement.</p>
+                    <div class="chart-box"><canvas id="familyDailyChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-4">
+            <div class="expense-card h-100">
+                <div class="card-body">
+                    <h2 class="h5 fw-bold">Members</h2>
+                    <div class="list-group list-group-flush">
+                        {% for member in members %}
+                            <div class="list-group-item px-0 d-flex justify-content-between gap-3">
+                                <span class="fw-bold">{{ member.user.username }}</span>
+                                <span class="muted-copy small">Joined {{ member.joined_at|date:"M d, Y" }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="expense-card h-100">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                        <h2 class="h5 fw-bold mb-0">Monthly family statement</h2>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'family_report' %}?{{ report_query }}&download=pdf" class="btn btn-soft btn-sm"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+                            <a href="{% url 'family_report' %}?{{ report_query }}&download=csv" class="btn btn-soft btn-sm"><i class="bi bi-filetype-csv"></i> CSV</a>
+                        </div>
+                    </div>
+                    {% if expenses %}
+                        <div class="table-responsive desktop-table">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Member</th>
+                                        <th>Title</th>
+                                        <th>Category</th>
+                                        <th>Date</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for expense in expenses %}
+                                        <tr>
+                                            <td class="fw-bold">{{ expense.user.username }}</td>
+                                            <td>{{ expense.title }}</td>
+                                            <td><span class="category-chip" data-category="{{ expense.category }}">{{ expense.category }}</span></td>
+                                            <td>{{ expense.date }}</td>
+                                            <td class="text-end fw-bold amount-expense">{{ expense.amount|floatformat:2 }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">No family data for the selected month.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-header mt-4">
+        <div>
+            <div class="page-kicker">Family transactions</div>
+            <h2 class="section-title h3 mb-0">Family transaction statement</h2>
+            <p class="muted-copy mb-0">Showing {{ transaction_date_from }} to {{ transaction_date_to }} with a total of <strong class="amount-expense">{{ transaction_total|floatformat:2 }}</strong>.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'family_report' %}?{{ transaction_query }}&download=transactions_pdf" class="btn btn-soft"><i class="bi bi-file-earmark-pdf"></i> Transactions PDF</a>
+            <a href="{% url 'family_report' %}?{{ transaction_query }}&download=transactions_csv" class="btn btn-soft"><i class="bi bi-filetype-csv"></i> Transactions CSV</a>
+        </div>
+    </div>
+
+    <div class="expense-card filter-card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <input type="hidden" name="family_group" value="{{ selected_group.pk }}">
+                <input type="hidden" name="month" value="{{ selected_month_number }}">
+                <input type="hidden" name="year" value="{{ selected_year }}">
+                <div class="col-xl-3 col-md-6">
+                    <label class="form-label" for="{{ transaction_form.title.id_for_label }}">Title</label>
+                    {{ transaction_form.title }}
+                </div>
+                <div class="col-xl-2 col-md-6">
+                    <label class="form-label" for="{{ transaction_form.member.id_for_label }}">Member</label>
+                    {{ transaction_form.member }}
+                </div>
+                <div class="col-xl-2 col-md-6">
+                    <label class="form-label" for="{{ transaction_form.category.id_for_label }}">Category</label>
+                    {{ transaction_form.category }}
+                </div>
+                <div class="col-xl-2 col-md-6">
+                    <label class="form-label" for="{{ transaction_form.payment_method.id_for_label }}">Payment</label>
+                    {{ transaction_form.payment_method }}
+                </div>
+                <div class="col-xl-1 col-md-6">
+                    <label class="form-label" for="{{ transaction_form.date_from.id_for_label }}">From</label>
+                    {{ transaction_form.date_from }}
+                </div>
+                <div class="col-xl-1 col-md-6">
+                    <label class="form-label" for="{{ transaction_form.date_to.id_for_label }}">To</label>
+                    {{ transaction_form.date_to }}
+                </div>
+                <div class="col-xl-1 col-12">
+                    <button class="btn btn-primary w-100" type="submit"><i class="bi bi-funnel"></i> Filter</button>
+                </div>
+                <div class="col-12">
+                    <a href="{% url 'family_report' %}?{{ report_query }}" class="btn btn-soft btn-sm">Reset Transactions</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if transaction_expenses %}
+        <div class="expense-card desktop-table">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Date</th>
+                                <th>Payment</th>
+                                <th>Description</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for expense in transaction_expenses %}
+                                <tr>
+                                    <td class="fw-bold">{{ expense.user.username }}</td>
+                                    <td>{{ expense.title }}</td>
+                                    <td><span class="category-chip" data-category="{{ expense.category }}">{{ expense.category }}</span></td>
+                                    <td>{{ expense.date }}</td>
+                                    <td>{{ expense.payment_method }}</td>
+                                    <td class="text-truncate" style="max-width: 260px;">{{ expense.description|default:"-" }}</td>
+                                    <td class="text-end fw-bold amount-expense">{{ expense.amount|floatformat:2 }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="mobile-card-list">
+            {% for expense in transaction_expenses %}
+                <div class="expense-card transaction-card">
+                    <div class="card-body">
+                        <div class="transaction-card-top">
+                            <div>
+                                <strong>{{ expense.title }}</strong>
+                                <div class="transaction-meta mt-2">
+                                    <span>{{ expense.user.username }}</span>
+                                    <span class="category-chip" data-category="{{ expense.category }}">{{ expense.category }}</span>
+                                    <span>{{ expense.payment_method }}</span>
+                                    <span>{{ expense.date }}</span>
+                                </div>
+                            </div>
+                            <span class="fw-bold amount-expense">{{ expense.amount|floatformat:2 }}</span>
+                        </div>
+                        {% if expense.description %}
+                            <p class="muted-copy small mb-0 mt-3">{{ expense.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">No family transactions found for the selected dates.</div>
+    {% endif %}
+</main>
+
+{{ member_chart|json_script:"family-member-data" }}
+{{ category_chart|json_script:"family-category-data" }}
+{{ daily_chart|json_script:"family-daily-data" }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    expenseCharts.renderBar("family-member-data", "familyMemberChart", "Member expenses");
+    expenseCharts.renderPie("family-category-data", "familyCategoryChart", "Category expenses");
+    expenseCharts.renderLine("family-daily-data", "familyDailyChart", "Daily expenses");
+</script>
+{% endblock %}

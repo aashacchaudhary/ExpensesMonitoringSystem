@@ -15,7 +15,7 @@ copy_to_tmp.bat
 
 # Temporary folders
 .tmp/
-#tmp/
+tmp/
 temp_tree.ps1
 
 # Other temp files

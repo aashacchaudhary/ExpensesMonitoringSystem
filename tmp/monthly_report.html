@@ -1,0 +1,192 @@
+{% extends "expenses/base.html" %}
+
+{% block title %}My Reports - Expense Monitoring System{% endblock %}
+
+{% block content %}
+<main class="page-wrap">
+    <div class="page-header">
+        <div>
+            <div class="page-kicker">My Reports</div>
+            <h1 class="section-title">{{ selected_month }} {{ selected_year }}</h1>
+            <p class="muted-copy mb-0">Totals, category flow, daily movement, and downloadable report statements.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'dashboard' %}" class="btn btn-soft"><i class="bi bi-arrow-left"></i> Back</a>
+            <a href="{% url 'monthly_report' %}?{{ report_query }}&download=pdf" class="btn btn-soft"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+            <a href="{% url 'monthly_report' %}?{{ report_query }}&download=csv" class="btn btn-soft"><i class="bi bi-filetype-csv"></i> CSV</a>
+            <a href="{% url 'expense_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Expense</a>
+        </div>
+    </div>
+
+    <div class="expense-card filter-card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-sm-5 col-md-3">
+                    <label class="form-label" for="{{ form.month.id_for_label }}">Month</label>
+                    {{ form.month }}
+                </div>
+                <div class="col-sm-5 col-md-3">
+                    <label class="form-label" for="{{ form.year.id_for_label }}">Year</label>
+                    {{ form.year }}
+                </div>
+                <div class="col-sm-2">
+                    <button class="btn btn-primary w-100" type="submit"><i class="bi bi-arrow-repeat"></i> View</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-xl-4">
+            <div class="expense-card metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="metric-label">Selected Month Total</div>
+                            <div class="metric-value amount-expense">{{ total|floatformat:2 }}</div>
+                        </div>
+                        <span class="metric-icon"><i class="bi bi-calendar3"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <div class="expense-card metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="metric-label">Highest Category</div>
+                            <div class="metric-value h3 mb-1">{% if highest_category %}{{ highest_category.label }}{% else %}-{% endif %}</div>
+                            <div class="muted-copy small">{% if highest_category %}{{ highest_category.total|floatformat:2 }} spent{% else %}No spending{% endif %}</div>
+                        </div>
+                        <span class="metric-icon"><i class="bi bi-stars"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="expense-card metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="metric-label">Expense Records</div>
+                            <div class="metric-value">{{ expenses|length }}</div>
+                        </div>
+                        <span class="metric-icon"><i class="bi bi-receipt"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-5">
+            <div class="expense-card h-100">
+                <div class="card-body">
+                    <h2 class="h5 fw-bold mb-1">Category summary</h2>
+                    <p class="muted-copy small">Expense mix by category.</p>
+                    <div class="chart-box"><canvas id="reportCategoryChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="expense-card h-100">
+                <div class="card-body">
+                    <h2 class="h5 fw-bold mb-1">Daily summary</h2>
+                    <p class="muted-copy small">Daily movement for the selected month.</p>
+                    <div class="chart-box"><canvas id="reportDailyChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="expense-card h-100">
+                <div class="card-body">
+                    <h2 class="h5 fw-bold">Category totals</h2>
+                    {% if category_summary %}
+                        <div class="list-group list-group-flush">
+                            {% for row in category_summary %}
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <span class="category-chip" data-category="{{ row.label }}">{{ row.label }}</span>
+                                    <strong>{{ row.total|floatformat:2 }}</strong>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">No category data for this month.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="expense-card h-100">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                        <h2 class="h5 fw-bold mb-0">Report statement</h2>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'monthly_report' %}?{{ report_query }}&download=pdf" class="btn btn-soft btn-sm"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+                            <a href="{% url 'monthly_report' %}?{{ report_query }}&download=csv" class="btn btn-soft btn-sm"><i class="bi bi-filetype-csv"></i> CSV</a>
+                        </div>
+                    </div>
+                    {% if expenses %}
+                        <div class="table-responsive desktop-table">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Category</th>
+                                        <th>Date</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for expense in expenses %}
+                                        <tr>
+                                            <td class="fw-bold">{{ expense.title }}</td>
+                                            <td><span class="category-chip" data-category="{{ expense.category }}">{{ expense.category }}</span></td>
+                                            <td>{{ expense.date }}</td>
+                                            <td class="text-end fw-bold amount-expense">{{ expense.amount|floatformat:2 }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mobile-card-list">
+                            {% for expense in expenses %}
+                                <div class="expense-card transaction-card">
+                                    <div class="card-body">
+                                        <div class="transaction-card-top">
+                                            <div>
+                                                <strong>{{ expense.title }}</strong>
+                                                <div class="transaction-meta mt-2">
+                                                    <span class="category-chip" data-category="{{ expense.category }}">{{ expense.category }}</span>
+                                                    <span>{{ expense.date }}</span>
+                                                </div>
+                                            </div>
+                                            <span class="fw-bold amount-expense">{{ expense.amount|floatformat:2 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">No report data available for the selected month.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{{ category_chart|json_script:"report-category-data" }}
+{{ daily_chart|json_script:"report-daily-data" }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    expenseCharts.renderPie("report-category-data", "reportCategoryChart", "Category expenses");
+    expenseCharts.renderLine("report-daily-data", "reportDailyChart", "Daily expenses");
+</script>
+{% endblock %}

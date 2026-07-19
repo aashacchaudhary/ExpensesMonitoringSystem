@@ -1,0 +1,83 @@
+{% extends "expenses/base.html" %}
+
+{% block title %}Expense Monitoring System{% endblock %}
+
+{% block content %}
+<section class="home-hero">
+    <div class="hero-dashboard-scene" aria-hidden="true">
+        <div class="scene-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="metric-label">Monthly rhythm</span>
+                <span class="mood-pill safe">Safe</span>
+            </div>
+            <div class="scene-bars">
+                <span style="height: 58%"></span>
+                <span style="height: 36%"></span>
+                <span style="height: 74%"></span>
+                <span style="height: 46%"></span>
+                <span style="height: 88%"></span>
+                <span style="height: 52%"></span>
+                <span style="height: 68%"></span>
+            </div>
+        </div>
+        <div class="scene-grid">
+            <div class="scene-card">
+                <div class="metric-label">Spent</div>
+                <div class="metric-value">1,240</div>
+            </div>
+            <div class="scene-card">
+                <div class="metric-label">Balance</div>
+                <div class="metric-value">760</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-content">
+        <div class="hero-copy">
+            <div class="page-kicker">Expense Monitoring System</div>
+            <h1 class="hero-title">Expense Monitoring System</h1>
+            <p class="hero-subtitle">
+                A calm personal finance dashboard for tracking expenses, budgets, reports, and family spending.
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg"><i class="bi bi-arrow-right-circle"></i> Create Account</a>
+                <a href="{% url 'login' %}" class="btn btn-soft btn-lg"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="feature-band">
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="expense-card h-100">
+                    <div class="card-body">
+                        <span class="metric-icon mb-3"><i class="bi bi-wallet2"></i></span>
+                        <h2 class="h5 fw-bold">Budget clarity</h2>
+                        <p class="muted-copy mb-0">Monthly limits, remaining balance, and calm alerts in one view.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="expense-card h-100">
+                    <div class="card-body">
+                        <span class="metric-icon mb-3"><i class="bi bi-graph-up"></i></span>
+                        <h2 class="h5 fw-bold">Soft reports</h2>
+                        <p class="muted-copy mb-0">Category, daily, and monthly spending patterns with clean charts.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="expense-card h-100">
+                    <div class="card-body">
+                        <span class="metric-icon mb-3"><i class="bi bi-people"></i></span>
+                        <h2 class="h5 fw-bold">Family</h2>
+                        <p class="muted-copy mb-0">Shared family codes and combined monthly expense summaries.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

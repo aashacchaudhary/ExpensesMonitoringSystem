@@ -1,0 +1,132 @@
+{% extends "expenses/base.html" %}
+
+{% block title %}Transactions - Expense Monitoring System{% endblock %}
+
+{% block content %}
+<main class="page-wrap">
+    <div class="page-header">
+        <div>
+            <div class="page-kicker">Search and filter</div>
+            <h1 class="section-title">Transactions</h1>
+            <p class="muted-copy mb-0">A clean view of your personal expenses.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'dashboard' %}" class="btn btn-soft"><i class="bi bi-arrow-left"></i> Back</a>
+            <a href="{% url 'expense_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Expense</a>
+        </div>
+    </div>
+
+    <div class="expense-card filter-card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <label class="form-label" for="{{ form.title.id_for_label }}">Title</label>
+                    {{ form.title }}
+                </div>
+                <div class="col-xl-2 col-lg-4 col-md-6">
+                    <label class="form-label" for="{{ form.category.id_for_label }}">Category</label>
+                    {{ form.category }}
+                </div>
+                <div class="col-xl-2 col-lg-4 col-md-6">
+                    <label class="form-label" for="{{ form.payment_method.id_for_label }}">Payment</label>
+                    {{ form.payment_method }}
+                </div>
+                <div class="col-xl-2 col-lg-4 col-md-6">
+                    <label class="form-label" for="{{ form.date.id_for_label }}">Date</label>
+                    {{ form.date }}
+                </div>
+                <div class="col-xl-1 col-lg-4 col-md-6">
+                    <label class="form-label" for="{{ form.month.id_for_label }}">Month</label>
+                    {{ form.month }}
+                </div>
+                <div class="col-xl-1 col-lg-4 col-md-6">
+                    <label class="form-label" for="{{ form.year.id_for_label }}">Year</label>
+                    {{ form.year }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.date_from.id_for_label }}">Custom date from</label>
+                    {{ form.date_from }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.date_to.id_for_label }}">Custom date to</label>
+                    {{ form.date_to }}
+                </div>
+                <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-funnel"></i> Apply Filters</button>
+                    <a href="{% url 'expense_list' %}" class="btn btn-soft">Reset</a>
+                    <span class="ms-auto fw-bold">Filtered total: <span class="amount-expense">{{ filtered_total|floatformat:2 }}</span></span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if expenses %}
+        <div class="expense-card desktop-table">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Date</th>
+                                <th>Payment</th>
+                                <th>Description</th>
+                                <th class="text-end">Amount</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for expense in expenses %}
+                                <tr>
+                                    <td class="fw-bold">{{ expense.title }}</td>
+                                    <td><span class="category-chip" data-category="{{ expense.category }}">{{ expense.category }}</span></td>
+                                    <td>{{ expense.date }}</td>
+                                    <td>{{ expense.payment_method }}</td>
+                                    <td class="text-truncate" style="max-width: 260px;">{{ expense.description|default:"-" }}</td>
+                                    <td class="text-end fw-bold amount-expense">{{ expense.amount|floatformat:2 }}</td>
+                                    <td class="text-end">
+                                        <form method="post" action="{% url 'expense_delete' expense.pk %}" onsubmit="return confirm('Delete this expense?');">
+                                            {% csrf_token %}
+                                            <button class="btn btn-outline-danger btn-sm" type="submit"><i class="bi bi-trash"></i> Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="mobile-card-list">
+            {% for expense in expenses %}
+                <div class="expense-card transaction-card">
+                    <div class="card-body">
+                        <div class="transaction-card-top">
+                            <div>
+                                <strong>{{ expense.title }}</strong>
+                                <div class="transaction-meta mt-2">
+                                    <span class="category-chip" data-category="{{ expense.category }}">{{ expense.category }}</span>
+                                    <span>{{ expense.payment_method }}</span>
+                                    <span>{{ expense.date }}</span>
+                                </div>
+                            </div>
+                            <span class="fw-bold amount-expense">{{ expense.amount|floatformat:2 }}</span>
+                        </div>
+                        {% if expense.description %}
+                            <p class="muted-copy small mb-3 mt-3">{{ expense.description }}</p>
+                        {% endif %}
+                        <form method="post" action="{% url 'expense_delete' expense.pk %}" onsubmit="return confirm('Delete this expense?');">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-danger btn-sm" type="submit"><i class="bi bi-trash"></i> Delete</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">No expenses found for the selected filters.</div>
+    {% endif %}
+</main>
+{% endblock %}

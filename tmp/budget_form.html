@@ -1,0 +1,68 @@
+{% extends "expenses/base.html" %}
+
+{% block title %}Budget Setup - Expense Monitoring System{% endblock %}
+
+{% block content %}
+<main class="page-wrap">
+    <div class="page-header">
+        <div>
+            <div class="page-kicker">Budget alerts</div>
+            <h1 class="section-title">Budget setup</h1>
+            <p class="muted-copy mb-0">Choose the month, year, and spending limit. The latest saved amount carries forward until you change it.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'dashboard' %}" class="btn btn-soft"><i class="bi bi-arrow-left"></i> Back</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-soft"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+        </div>
+    </div>
+
+    <div class="row g-3 align-items-stretch">
+        <div class="col-xl-8">
+            <div class="expense-card h-100">
+                <div class="card-body p-lg-5">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="row g-4">
+                            {% for field in form %}
+                                <div class="col-md-4">
+                                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% for error in field.errors %}
+                                        <div class="text-danger small mt-1">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
+                            <a href="{% url 'dashboard' %}" class="btn btn-soft">Cancel</a>
+                            <button class="btn btn-primary" type="submit"><i class="bi bi-wallet2"></i> Save Budget</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="expense-card h-100">
+                <div class="card-body">
+                    <span class="metric-icon mb-3"><i class="bi bi-bell"></i></span>
+                    <h2 class="h5 fw-bold">Alert rhythm</h2>
+                    <p class="muted-copy small mb-0">{{ budget_source_label }}</p>
+                    <div class="soft-divider"></div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="muted-copy">75% used</span>
+                        <span class="mood-pill watch">Watch</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="muted-copy">90% used</span>
+                        <span class="mood-pill risk">Risk</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="muted-copy">Over limit</span>
+                        <span class="mood-pill over">Critical</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
