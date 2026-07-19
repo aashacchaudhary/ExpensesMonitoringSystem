@@ -1,0 +1,77 @@
+    \item Offering CSV and PDF report export with date filtering.
+    \item Supporting family sharing for collaborative budget tracking.
+\end{itemize}
+
+The project successfully combines modern web technologies to create an accessible and effective expense monitoring solution. The modular architecture allows for easy extension, and the open-source implementation enables broad adoption.
+
+\section{Future Enhancements}
+\begin{itemize}
+    \item \textbf{Recurring Expenses:} Add automation for monthly bills and subscriptions.
+    \item \textbf{Bank API Integration:} Integrate with bank APIs for automatic transaction import.
+    \item \textbf{Email Notifications:} Send daily or weekly budget summary emails.
+    \item \textbf{Mobile Application:} Develop iOS and Android apps for on-the-go expense tracking.
+    \item \textbf{Multi-currency Support:} Add support for multiple currencies with exchange rate conversion.
+    \item \textbf{Machine Learning Predictions:} Implement spending predictions and savings recommendations.
+    \item \textbf{Receipt Scanning:} Add OCR for automatic receipt data extraction.
+    \item \textbf{Cloud Deployment:} Deploy on cloud platform with HTTPS and auto-scaling.
+    \item \textbf{Database Upgrade:} Replace SQLite with PostgreSQL for better scalability.
+    \item \textbf{API Development:} Create REST APIs for third-party integration.
+\end{itemize}
+% ------------ APPENDIX ----------
+\appendix
+\chapter{Installation and User Guide}
+
+\section{System Requirements}
+\begin{itemize}
+    \item Python 3.8 or higher
+    \item pip (Python package installer)
+    \item Web browser (Chrome, Firefox, Edge)
+\end{itemize}
+
+\section{Environment Setup}
+From the project root directory:
+\begin{verbatim}
+python -m venv venv
+source venv/bin/activate   # Linux/Mac
+venv\Scripts\activate      # Windows
+pip install -r requirements.txt
+\end{verbatim}
+
+\section{Running the Application}
+\begin{verbatim}
+python app.py
+\end{verbatim}
+Then open \texttt{http://127.0.0.1:5000/} in your browser.
+
+\section{Default Login Credentials}
+\begin{verbatim}
+Username: admin
+Password: admin123
+\end{verbatim}
+
+\section{Testing Command}
+\begin{verbatim}
+python smoke_test.py
+\end{verbatim}
+% ------------ REFERENCES ----------
+\addcontentsline{toc}{chapter}{References}
+\renewcommand{\bibname}{References}
+\begin{thebibliography}{99}
+
+\bibitem{flaskdocs} Flask Documentation. (2026). Flask web framework. Retrieved from \url{https://flask.palletsprojects.com/}
+
+\bibitem{chartjs} Chart.js Documentation. (2026). Open source HTML5 charts. Retrieved from \url{https://www.chartjs.org/}
+
+\bibitem{sqlalchemy} SQLAlchemy Documentation. (2026). SQLAlchemy ORM. Retrieved from \url{https://www.sqlalchemy.org/}
+
+\bibitem{bootstrap} Bootstrap Documentation. (2026). Bootstrap v5. Retrieved from \url{https://getbootstrap.com/}
+
+\bibitem{tamara2019} Tamara, S. (2019). The effect of visual feedback on personal budgeting behavior. \textit{Journal of Financial Technology}, 12(3), 45-58.
+
+\bibitem{kumar2020} Kumar, A., \& Singh, R. (2020). Personal finance management systems: A comparative study. \textit{International Journal of Computer Applications}, 175(15), 1-7.
+
+\bibitem{patel2021} Patel, M., \& Sharma, N. (2021). Design and implementation of expense tracker web application. \textit{IRJET}, 8(6), 2345-2350.
+
+\end{thebibliography}
+
+\end{document}

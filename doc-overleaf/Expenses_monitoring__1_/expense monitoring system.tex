@@ -1,0 +1,276 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\title{\textbf{Expense Monitoring System} \\ \Large Documentation and User Guide}
+\author{Aasha Kumari Chaudhary \\ Sarswati Rokaya \\ Payal Joshi}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The Expense Monitoring System is a web-based personal finance dashboard that helps users track expenses, manage budgets, generate reports, and share spending with family members. Built with Django, SQLite, Bootstrap 5, and Chart.js, it offers a clean, glassmorphism-inspired interface. This document describes the system's features, architecture, database design, user interface components, and implementation details as derived from the final prototype screenshots.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Introduction}
+Managing personal finances effectively requires constant tracking of expenses and adherence to budgets. The Expense Monitoring System provides a calm, intuitive dashboard where users can:
+\begin{itemize}
+    \item Set monthly budgets with spending limits.
+    \item Record expenses with categories, quantities, and dates.
+    \item Visualize budget usage (e.g., 85\% used, over limit alerts).
+    \item Generate CSV reports and view monthly trends.
+    \item Create or join family groups to share expense data.
+\end{itemize}
+The system is accessible via a secure authentication portal and is designed for both individual and family use.
+
+\section{Features}
+Based on the screenshots provided, the system includes the following key features:
+
+\subsection{Budget Setup}
+\begin{itemize}
+    \item Select month and year (e.g., May 2025).
+    \item Enter a spending limit (e.g., 5000.00).
+    \item Visual indicators show percentage used (75\%, 85\%, over limit).
+    \item Save budget button stores the limit.
+    \item Display of “Amount to spend” and “Available for this month”.
+\end{itemize}
+
+\subsection{Expense Recording}
+\begin{itemize}
+    \item Report statement form with title (e.g., “Cleaning”).
+    \item Category selection (e.g., “Other”).
+    \item Date picker (e.g., May 21, 2025).
+    \item Amount field (e.g., 12500.00).
+    \item Quantity selector (1–999+).
+    \item After payment, an “Apply” button submits the expense.
+\end{itemize}
+
+\subsection{Expense Dashboard}
+\begin{itemize}
+    \item Total expense for the month (e.g., 12,500.00).
+    \item Budget limit (e.g., 5,000.00).
+    \item Over budget percentage (e.g., 250.0\%).
+    \item Monthly expenses trend (line/bar chart showing 7,500.00, 2,500.00, etc.).
+    \item Category breakdown (e.g., “Other” category amount 750.00).
+    \item “OK” button to dismiss alerts.
+\end{itemize}
+
+\subsection{Family Group Management}
+\begin{itemize}
+    \item Create a family group with a custom name (e.g., “Shanna Family”).
+    \item Automatically generated family code for joining.
+    \item Join existing group by entering family code.
+    \item Family members can see each other’s expenses (optional).
+\end{itemize}
+
+\subsection{Authentication \& Reporting}
+\begin{itemize}
+    \item Create account with username, email, password (validation: at least 8 characters, not entirely numeric, etc.).
+    \item Login page with existing account option.
+    \item Report export: calendar view, date selection, CSV download.
+\end{itemize}
+
+\section{System Architecture}
+The application follows a classic Model-View-Template (MVT) pattern using Django.
+
+\subsection{Technology Stack}
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Component} & \textbf{Technology} \\ \hline
+Backend & Python 3, Django \\ \hline
+Database & SQLite \\ \hline
+Authentication & Django built-in auth \\ \hline
+Frontend & Django Templates, HTML5, CSS3, JavaScript \\ \hline
+UI Framework & Bootstrap 5 \\ \hline
+Icons & Bootstrap Icons \\ \hline
+Charts & Chart.js \\ \hline
+Styling Theme & Soft Ledger Glass (custom CSS, glassmorphism) \\ \hline
+\end{tabular}
+\caption{Technology Stack}
+\end{table}
+
+\subsection{High-Level Architecture Diagram}
+\begin{figure}[H]
+\centering
+% Replace with actual diagram if available
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{3cm} \textbf{Figure:} Django MVT Architecture with SQLite backend \vspace{3cm}}}
+\caption{System Architecture Overview}
+\end{figure}
+
+\section{Database Design}
+The SQLite database contains the following main models (simplified schema):
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Table} & \textbf{Fields} & \textbf{Description} \\ \hline
+User (Django) & id, username, email, password & Built-in auth user \\ \hline
+FamilyGroup & id, name, family\_code, created\_by & Family groups \\ \hline
+Category & id, name, user, is\_default & Expense categories \\ \hline
+Budget & id, user, month, year, amount & Monthly budget limit \\ \hline
+Expense & id, user, family, category, title, date, amount, quantity & Individual expense records \\ \hline
+\end{tabular}
+\caption{Core Database Tables}
+\end{table}
+
+Relationships:
+\begin{itemize}
+    \item A \texttt{User} can belong to one \texttt{FamilyGroup}.
+    \item \texttt{Expense} belongs to a \texttt{User} and optionally a \texttt{FamilyGroup}.
+    \item \texttt{Budget} is per user per month/year.
+    \item \texttt{Category} can be user‑specific or default.
+\end{itemize}
+
+\section{User Interface Screenshots}
+The following screens were captured during the final prototype testing. They illustrate the main pages.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.7\textwidth}{\centering \vspace{2cm} \textbf{Screenshot 1:} Budget Setup (Month: May, 2025, Limit: 5000.00) \vspace{2cm}}}
+\caption{Budget Setup Page}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.7\textwidth}{\centering \vspace{2cm} \textbf{Screenshot 2:} Family Group Management – Create or Join \vspace{2cm}}}
+\caption{Family Group Page}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.7\textwidth}{\centering \vspace{2cm} \textbf{Screenshot 3:} Report Statement – Expense Entry (Title: Cleaning, Amount: 12500.00) \vspace{2cm}}}
+\caption{Expense / Report Statement Form}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.7\textwidth}{\centering \vspace{2cm} \textbf{Screenshot 4:} Dashboard – Total Expense 12,500.00, Budget 5,000.00, Over Budget 250\% \vspace{2cm}}}
+\caption{Dashboard with Over Budget Alert}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.7\textwidth}{\centering \vspace{2cm} \textbf{Screenshot 5:} Create Account Page with Validation \vspace{2cm}}}
+\caption{Create Account Page}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.7\textwidth}{\centering \vspace{2cm} \textbf{Screenshot 6:} Expense Monitoring System Landing Page \vspace{2cm}}}
+\caption{Landing Page}
+\end{figure}
+
+\section{Implementation Details}
+
+\subsection{Backend (Python/Django)}
+Key views implemented:
+
+\begin{itemize}
+    \item \texttt{register\_view}: Handles user creation with password validation.
+    \item \texttt{login\_view} / \texttt{logout\_view}: Session management.
+    \item \texttt{dashboard\_view}: Aggregates current month expenses, calculates over budget percentage, prepares trend data for Chart.js.
+    \item \texttt{budget\_view}: Saves or updates monthly budget.
+    \item \texttt{expense\_view}: Creates expense records, assigns category.
+    \item \texttt{family\_view}: Creates family group with unique code or joins existing.
+    \item \texttt{report\_view}: Filters expenses by date/category and exports CSV.
+\end{itemize}
+
+\subsubsection{Sample Code Snippet – Dashboard Calculation}
+\begin{lstlisting}[language=Python, caption=Over Budget Calculation]
+# views.py excerpt
+budget = Budget.objects.filter(user=request.user, month=current_month, year=current_year).first()
+budget_limit = budget.amount if budget else 0
+total_expense = Expense.objects.filter(
+    user=request.user,
+    date__year=current_year,
+    date__month=current_month
+).aggregate(total=Sum('amount'))['total'] or 0
+
+over_budget_percent = 0
+if budget_limit > 0 and total_expense > budget_limit:
+    over_budget_percent = ((total_expense - budget_limit) / budget_limit) * 100
+\end{lstlisting}
+
+\subsection{Frontend (Templates, Bootstrap, Chart.js)}
+\begin{itemize}
+    \item All pages extend a \texttt{base.html} template with Bootstrap 5 CDN.
+    \item Dashboard uses Chart.js to render a line chart of monthly expenses.
+    \item Budget progress bar shows dynamic width (\texttt{width: \{\{ used\_percent \}\}\%}) with color change if over budget.
+    \item Family code is generated automatically using \texttt{random.choices} on save.
+\end{itemize}
+
+\subsection{Validation Rules}
+From the registration screenshot:
+\begin{itemize}
+    \item Username: 150 characters or fewer; letters, digits, and @/./+/-/\_ only.
+    \item Password: at least 8 characters, not too similar to personal info, not entirely numeric, not a common password.
+    \item Email: valid format (e.g., you@example.com).
+\end{itemize}
+
+\section{Testing and Deployment}
+The system was tested with the following scenarios:
+
+\begin{enumerate}
+    \item \textbf{User registration} – successful creation with valid data, error messages for invalid inputs.
+    \item \textbf{Budget setting} – user can set a budget for any future month; edits update existing budget.
+    \item \textbf{Expense addition} – expense appears immediately in dashboard and category breakdown.
+    \item \textbf{Over budget alert} – when expenses exceed budget, dashboard shows red warning “Over Budget 250\%”.
+    \item \textbf{Family group} – creating a group generates a code; another user can join using that code.
+    \item \textbf{Report CSV} – generates correct date-filtered data.
+\end{enumerate}
+
+The application can be deployed on any WSGI server (e.g., Gunicorn) with SQLite for development or PostgreSQL for production.
+
+\section{Conclusion}
+The Expense Monitoring System successfully provides a user-friendly, responsive platform for personal and family expense tracking. The use of Django ensures maintainability, while Bootstrap and Chart.js deliver an appealing visual experience. Future enhancements may include mobile apps, receipt scanning, and budget notifications.
+
+\section*{Acknowledgements}
+We thank our project supervisor and all team members for their contributions to the successful completion of this system.
+
+\end{document}
