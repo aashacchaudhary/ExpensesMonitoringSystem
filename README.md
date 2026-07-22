@@ -93,3 +93,5 @@ python manage.py test
 ```
 
 The tests cover duplicate email validation, login protection, user data isolation, dashboard budget calculations, and family report privacy.
+
+##test
