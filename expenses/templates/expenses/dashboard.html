@@ -11,6 +11,8 @@
             <p class="muted-copy mb-0">Your current month in a calmer, clearer view.</p>
         </div>
         <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'recurring_list' %}" class="btn btn-soft"><i class="bi bi-arrow-repeat"></i> Recurring</a>
+            <a href="{% url 'emi_calculator' %}" class="btn btn-soft"><i class="bi bi-calculator"></i> EMI</a>
             <a href="{% url 'budget_setup' %}" class="btn btn-soft"><i class="bi bi-wallet2"></i> Set Budget</a>
             <a href="{% url 'expense_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Expense</a>
         </div>
@@ -62,6 +64,22 @@
                         <span class="metric-icon"><i class="bi bi-piggy-bank"></i></span>
                     </div>
                     <div class="muted-copy small mt-2">After monthly expense</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="expense-card metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="metric-label">Forecast Next Month</div>
+                            <div class="metric-value {% if forecast_next_month %}amount-expense{% else %}muted-copy{% endif %}">
+                                {% if forecast_next_month %}{{ forecast_next_month|floatformat:2 }}{% else %}-{% endif %}
+                            </div>
+                        </div>
+                        <span class="metric-icon"><i class="bi bi-graph-up-arrow"></i></span>
+                    </div>
+                    <div class="muted-copy small mt-2">Based on last 6 months</div>
                 </div>
             </div>
         </div>

@@ -14,6 +14,7 @@
             <a href="{% url 'dashboard' %}" class="btn btn-soft"><i class="bi bi-arrow-left"></i> Back</a>
             <a href="{% url 'monthly_report' %}?{{ report_query }}&download=pdf" class="btn btn-soft"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
             <a href="{% url 'monthly_report' %}?{{ report_query }}&download=csv" class="btn btn-soft"><i class="bi bi-filetype-csv"></i> CSV</a>
+            <a href="{% url 'monthly_report' %}?{{ report_query }}&download=excel" class="btn btn-soft"><i class="bi bi-file-earmark-excel"></i> Excel</a>
             <a href="{% url 'expense_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Expense</a>
         </div>
     </div>
@@ -128,6 +129,7 @@
                         <div class="d-flex flex-wrap gap-2">
                             <a href="{% url 'monthly_report' %}?{{ report_query }}&download=pdf" class="btn btn-soft btn-sm"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
                             <a href="{% url 'monthly_report' %}?{{ report_query }}&download=csv" class="btn btn-soft btn-sm"><i class="bi bi-filetype-csv"></i> CSV</a>
+                            <a href="{% url 'monthly_report' %}?{{ report_query }}&download=excel" class="btn btn-soft btn-sm"><i class="bi bi-file-earmark-excel"></i> Excel</a>
                         </div>
                     </div>
                     {% if expenses %}

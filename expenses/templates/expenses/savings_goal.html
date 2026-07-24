@@ -1,0 +1,67 @@
+{% extends "expenses/base.html" %}
+
+{% block title %}Savings Goal - Expense Monitoring System{% endblock %}
+
+{% block content %}
+<main class="page-wrap">
+    <div class="page-header">
+        <div>
+            <div class="page-kicker">Finance tools</div>
+            <h1 class="section-title">Savings Goal Calculator</h1>
+            <p class="muted-copy mb-0">Project future value from initial amount and monthly contributions.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'emi_calculator' %}" class="btn btn-soft"><i class="bi bi-calculator"></i> EMI Calculator</a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-5">
+            <div class="expense-card">
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <button class="btn btn-primary w-100" type="submit">Compute Future Value</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            {% if result %}
+                <div class="expense-card">
+                    <div class="card-body">
+                        <div class="metric-label">Total Future Value</div>
+                        <div class="metric-value">{{ result.total_future_value|floatformat:2 }}</div>
+                        <div class="soft-divider"></div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="metric-label">Initial Amount Growth</div>
+                                <div>{{ result.future_value_initial|floatformat:2 }}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-label">Monthly Contributions Growth</div>
+                                <div>{{ result.future_value_monthly|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="expense-card h-100">
+                    <div class="card-body d-flex align-items-center justify-content-center" style="min-height:220px;">
+                        <span class="muted-copy">Enter your inputs to project savings growth.</span>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+{% endblock %}

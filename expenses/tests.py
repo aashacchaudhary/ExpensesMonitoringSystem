@@ -2,10 +2,11 @@ import datetime
 from decimal import Decimal
 
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Budget, Expense, FamilyBudget, FamilyGroup, FamilyMembership, UserSecurityAnswer
+from .models import Budget, Expense, FamilyBudget, FamilyGroup, FamilyMembership, RecurringExpense, UserSecurityAnswer
 
 
 class ExpenseManagementTests(TestCase):
@@ -454,3 +455,71 @@ class ExpenseManagementTests(TestCase):
         self.assertEqual(pdf_response.status_code, 200)
         self.assertEqual(pdf_response["Content-Type"], "application/pdf")
         self.assertTrue(pdf_response.content.startswith(b"%PDF"))
+
+    def test_my_reports_download_excel(self):
+        Expense.objects.create(
+            user=self.user,
+            title="Report excel",
+            amount=Decimal("25.00"),
+            category="Food",
+            date=datetime.date(2026, 5, 5),
+            payment_method="Cash",
+        )
+
+        self.client.login(username="alex", password="StrongPass123")
+        excel_response = self.client.get(reverse("monthly_report"), {"month": 5, "year": 2026, "download": "excel"})
+
+        self.assertEqual(excel_response.status_code, 200)
+        self.assertEqual(
+            excel_response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        self.assertIn(".xlsx", excel_response["Content-Disposition"])
+
+    def test_recurring_expense_generation_command(self):
+        today = datetime.date.today()
+        recurring = RecurringExpense.objects.create(
+            user=self.user,
+            title="Auto rent",
+            amount=Decimal("100.00"),
+            category="Rent",
+            payment_method="Bank",
+            frequency=RecurringExpense.FREQUENCY_MONTHLY,
+            next_due_date=today,
+            is_active=True,
+        )
+
+        call_command("generate_recurring")
+
+        self.assertTrue(
+            Expense.objects.filter(
+                user=self.user,
+                title="Auto rent",
+                amount=Decimal("100.00"),
+                description__icontains="Auto-generated from recurring expense",
+            ).exists()
+        )
+        recurring.refresh_from_db()
+        self.assertGreater(recurring.next_due_date, today)
+
+    def test_finance_tools_pages_render_and_calculate(self):
+        self.client.login(username="alex", password="StrongPass123")
+
+        recurring_response = self.client.get(reverse("recurring_list"))
+        emi_response = self.client.post(
+            reverse("emi_calculator"),
+            {"principal": "100000", "annual_rate": "8.5", "months": "60"},
+        )
+        savings_response = self.client.post(
+            reverse("savings_goal"),
+            {
+                "present_value": "10000",
+                "monthly_contribution": "1000",
+                "annual_rate": "6.0",
+                "years": "10",
+            },
+        )
+
+        self.assertEqual(recurring_response.status_code, 200)
+        self.assertContains(emi_response, "Monthly EMI")
+        self.assertContains(savings_response, "Total Future Value")

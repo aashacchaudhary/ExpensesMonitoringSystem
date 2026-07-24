@@ -1,0 +1,70 @@
+{% extends "expenses/base.html" %}
+
+{% block title %}Recurring Expenses - Expense Monitoring System{% endblock %}
+
+{% block content %}
+<main class="page-wrap">
+    <div class="page-header">
+        <div>
+            <div class="page-kicker">Recurring</div>
+            <h1 class="section-title">Recurring Expenses</h1>
+            <p class="muted-copy mb-0">Track repeating payments and auto-generate entries on due dates.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'dashboard' %}" class="btn btn-soft"><i class="bi bi-arrow-left"></i> Back</a>
+            <a href="{% url 'recurring_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Recurring</a>
+        </div>
+    </div>
+
+    <div class="expense-card">
+        <div class="card-body">
+            {% if recurring %}
+                <div class="table-responsive desktop-table">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Amount</th>
+                                <th>Category</th>
+                                <th>Frequency</th>
+                                <th>Next Due</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in recurring %}
+                                <tr>
+                                    <td class="fw-bold">{{ row.title }}</td>
+                                    <td>{{ row.amount|floatformat:2 }}</td>
+                                    <td><span class="category-chip" data-category="{{ row.category }}">{{ row.category }}</span></td>
+                                    <td>{{ row.get_frequency_display }}</td>
+                                    <td>{{ row.next_due_date }}</td>
+                                    <td>
+                                        {% if row.is_active %}
+                                            <span class="badge bg-success-subtle text-success-emphasis">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary-emphasis">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <a href="{% url 'recurring_edit' row.pk %}" class="btn btn-soft btn-sm"><i class="bi bi-pencil"></i></a>
+                                            <form method="post" action="{% url 'recurring_delete' row.pk %}" onsubmit="return confirm('Delete this recurring expense?')">
+                                                {% csrf_token %}
+                                                <button class="btn btn-outline-danger btn-sm" type="submit"><i class="bi bi-trash"></i></button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">No recurring expenses configured yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+{% endblock %}

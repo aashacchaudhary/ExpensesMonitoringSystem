@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Budget, Expense, FamilyBudget, FamilyGroup, FamilyMembership, UserSecurityAnswer
+from .models import Budget, Expense, FamilyBudget, FamilyGroup, FamilyMembership, RecurringExpense, UserSecurityAnswer
 
 
 @admin.register(Expense)
@@ -50,3 +50,10 @@ class FamilyMembershipAdmin(admin.ModelAdmin):
     list_display = ("user", "family_group", "joined_at")
     list_filter = ("family_group",)
     search_fields = ("user__username", "family_group__name", "family_group__code")
+
+
+@admin.register(RecurringExpense)
+class RecurringExpenseAdmin(admin.ModelAdmin):
+    list_display = ("title", "user", "amount", "frequency", "next_due_date", "is_active")
+    list_filter = ("frequency", "is_active", "category", "payment_method")
+    search_fields = ("title", "user__username", "user__email")

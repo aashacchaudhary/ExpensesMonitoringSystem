@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Budget, Expense, FamilyBudget, FamilyGroup, SECURITY_QUESTION
+from .models import Budget, Expense, FamilyBudget, FamilyGroup, RecurringExpense, SECURITY_QUESTION
 
 
 CURRENT_YEAR = datetime.date.today().year
@@ -259,3 +259,47 @@ class JoinFamilyForm(forms.Form):
 
     def clean_code(self):
         return self.cleaned_data["code"].strip().upper()
+
+
+class RecurringExpenseForm(forms.ModelForm):
+    class Meta:
+        model = RecurringExpense
+        fields = ("title", "amount", "category", "payment_method", "frequency", "next_due_date", "is_active")
+        widgets = {
+            "next_due_date": forms.DateInput(attrs={"type": "date"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_bootstrap_widgets(self.fields)
+        self.fields["title"].widget.attrs.update({"placeholder": "Example: House rent"})
+        self.fields["amount"].widget.attrs.update({"min": "0.01", "step": "0.01"})
+
+
+class EMIForm(forms.Form):
+    principal = forms.DecimalField(max_digits=12, decimal_places=2, min_value=0.01, label="Loan Amount")
+    annual_rate = forms.DecimalField(max_digits=5, decimal_places=2, min_value=0, label="Annual Interest Rate (%)")
+    months = forms.IntegerField(min_value=1, max_value=360, label="Tenure (months)")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_bootstrap_widgets(self.fields)
+        self.fields["principal"].widget.attrs.update({"placeholder": "Example: 500000"})
+        self.fields["annual_rate"].widget.attrs.update({"placeholder": "Example: 8.5"})
+        self.fields["months"].widget.attrs.update({"placeholder": "Example: 60"})
+
+
+class SavingsGoalForm(forms.Form):
+    present_value = forms.DecimalField(max_digits=12, decimal_places=2, min_value=0, label="Initial Amount")
+    monthly_contribution = forms.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        min_value=0,
+        label="Monthly Contribution",
+    )
+    annual_rate = forms.DecimalField(max_digits=5, decimal_places=2, min_value=0, label="Annual Interest Rate (%)")
+    years = forms.IntegerField(min_value=1, max_value=50, label="Number of Years")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_bootstrap_widgets(self.fields)

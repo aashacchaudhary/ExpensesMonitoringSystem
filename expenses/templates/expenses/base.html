@@ -30,8 +30,14 @@
             <a class="side-link {% if request.resolver_match.url_name == 'expense_list' %}active{% endif %}" href="{% url 'expense_list' %}">
                 <i class="bi bi-receipt"></i><span>Transactions</span>
             </a>
+            <a class="side-link {% if request.resolver_match.url_name == 'recurring_list' or request.resolver_match.url_name == 'recurring_create' or request.resolver_match.url_name == 'recurring_edit' %}active{% endif %}" href="{% url 'recurring_list' %}">
+                <i class="bi bi-arrow-repeat"></i><span>Recurring</span>
+            </a>
             <a class="side-link {% if request.resolver_match.url_name == 'monthly_report' %}active{% endif %}" href="{% url 'monthly_report' %}">
                 <i class="bi bi-bar-chart"></i><span>My Reports</span>
+            </a>
+            <a class="side-link {% if request.resolver_match.url_name == 'emi_calculator' or request.resolver_match.url_name == 'savings_goal' %}active{% endif %}" href="{% url 'emi_calculator' %}">
+                <i class="bi bi-calculator"></i><span>Finance Tools</span>
             </a>
             <a class="side-link {% if request.resolver_match.url_name == 'budget_setup' %}active{% endif %}" href="{% url 'budget_setup' %}">
                 <i class="bi bi-wallet2"></i><span>Budget</span>
