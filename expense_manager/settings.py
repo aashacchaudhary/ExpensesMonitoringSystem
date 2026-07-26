@@ -101,7 +101,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'expensesmonitoring@gmail.com'
-EMAIL_HOST_PASSWORD = 'tebhumhhjfccjcfw'
+EMAIL_HOST_PASSWORD = 'password must be hidden'
 DEFAULT_FROM_EMAIL = 'Expense Monitor <expensesmonitoring@gmail.com>'
 
 # Base URL for links in emails (change for production)
