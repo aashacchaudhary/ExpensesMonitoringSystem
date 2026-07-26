@@ -6,6 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, UserC
 from django.contrib.auth.models import User
 
 from .models import Budget, Expense, FamilyBudget, FamilyGroup, SECURITY_QUESTION
+from .models import UserSettings
 
 
 CURRENT_YEAR = datetime.date.today().year
