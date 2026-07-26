@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><style>body { font-family: Inter, sans-serif; } .container { max-width:600px; margin:auto; background:#fff; padding:20px; border-radius:16px; } table { width:100%; border-collapse:collapse; } th, td { padding:8px; text-align:left; border-bottom:1px solid #eee; }</style></head>
+<body>
+<div class="container">
+    <h2 style="color:#16A085;">Daily Expense Summary</h2>
+    <p>Hi {{ user.username }}, here’s your spending for {{ date }}:</p>
+    <p><strong>Total: {{ total|floatformat:2 }}</strong></p>
+    <table>
+        <tr><th>Title</th><th>Category</th><th>Amount</th></tr>
+        {% for exp in expenses %}
+        <tr><td>{{ exp.title }}</td><td>{{ exp.category }}</td><td>{{ exp.amount|floatformat:2 }}</td></tr>
+        {% endfor %}
+    </table>
+    <p><a href="{{ site_url }}{% url 'dashboard' %}">View full dashboard</a></p>
+</div>
+</body>
+</html>

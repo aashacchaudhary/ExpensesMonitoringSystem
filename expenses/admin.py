@@ -50,3 +50,20 @@ class FamilyMembershipAdmin(admin.ModelAdmin):
     list_display = ("user", "family_group", "joined_at")
     list_filter = ("family_group",)
     search_fields = ("user__username", "family_group__name", "family_group__code")
+
+from .models import UserSettings, AlertLog, RecurringExpense
+
+@admin.register(UserSettings)
+class UserSettingsAdmin(admin.ModelAdmin):
+    list_display = ('user', 'email_budget_alerts', 'email_daily_summary', 'email_monthly_report')
+    search_fields = ('user__username',)
+
+@admin.register(AlertLog)
+class AlertLogAdmin(admin.ModelAdmin):
+    list_display = ('user', 'alert_type', 'sent_at')
+    list_filter = ('alert_type',)
+
+@admin.register(RecurringExpense)
+class RecurringExpenseAdmin(admin.ModelAdmin):
+    list_display = ('user', 'title', 'amount', 'next_due_date', 'is_active')
+    list_filter = ('is_active', 'frequency')

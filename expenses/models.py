@@ -166,3 +166,63 @@ class FamilyMembership(models.Model):
 
     def __str__(self):
         return f"{self.user.username} in {self.family_group.name}"
+
+
+
+# expenses/models.py – append
+
+class UserSettings(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='settings')
+    email_budget_alerts = models.BooleanField(default=True)
+    email_family_alerts = models.BooleanField(default=True)
+    email_daily_summary = models.BooleanField(default=False)
+    email_weekly_summary = models.BooleanField(default=False)
+    email_monthly_report = models.BooleanField(default=False)
+    email_payment_reminders = models.BooleanField(default=True)
+    email_unexpected_spending = models.BooleanField(default=True)
+    last_budget_alert_percent = models.PositiveSmallIntegerField(default=0)
+    last_family_budget_alert_percent = models.PositiveSmallIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Settings for {self.user.username}"
+
+class AlertLog(models.Model):
+    ALERT_TYPES = (
+        ('budget_personal', 'Personal Budget Threshold'),
+        ('budget_family', 'Family Budget Threshold'),
+        ('unexpected', 'Unexpected Spending'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='alert_logs')
+    alert_type = models.CharField(max_length=20, choices=ALERT_TYPES)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    metadata = models.JSONField(default=dict)  # store threshold, amount, etc.
+
+    class Meta:
+        ordering = ['-sent_at']
+
+class RecurringExpense(models.Model):
+    FREQUENCY_CHOICES = (
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('yearly', 'Yearly'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recurring_expenses')
+    title = models.CharField(max_length=150)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0.01)])
+    category = models.CharField(max_length=30, choices=Expense.CATEGORY_CHOICES, default=Expense.CATEGORY_OTHER)
+    payment_method = models.CharField(max_length=30, choices=Expense.PAYMENT_METHOD_CHOICES, default=Expense.PAYMENT_CASH)
+    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default='monthly')
+    next_due_date = models.DateField()
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['next_due_date']
+
+    def __str__(self):
+        return f"{self.title} - {self.amount} due {self.next_due_date}"
+        

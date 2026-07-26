@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><style>body { font-family: Inter, sans-serif; } .container { max-width:600px; margin:auto; background:#fff; padding:20px; border-radius:16px; }</style></head>
+<body>
+<div class="container">
+    <h2 style="color:#16A085;">Payment Reminder</h2>
+    <p>Hi {{ user.username }},</p>
+    <p>Your recurring expense <strong>{{ expense.title }}</strong> of <strong>{{ expense.amount|floatformat:2 }}</strong> is due on <strong>{{ due_date }}</strong>.</p>
+    <p>Category: {{ expense.category }} | Payment: {{ expense.payment_method }}</p>
+    <p><a href="{{ site_url }}{% url 'expense_create' %}">Record this payment now</a></p>
+</div>
+</body>
+</html>

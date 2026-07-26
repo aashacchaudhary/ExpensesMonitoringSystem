@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head><style>body { font-family: Inter, sans-serif; } .container { max-width:600px; margin:auto; background:#fff; padding:20px; border-radius:16px; }</style></head>
+<body>
+<div class="container">
+    <h2 style="color:#16A085;">Monthly Report</h2>
+    <p>Hi {{ user.username }},</p>
+    <p>Please find attached your expense report for {{ month }} {{ year }}.</p>
+    <p><a href="{{ site_url }}{% url 'monthly_report' %}?month={{ month|date:'m' }}&year={{ year }}">View online</a></p>
+</div>
+</body>
+</html>

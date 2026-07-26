@@ -259,3 +259,22 @@ class JoinFamilyForm(forms.Form):
 
     def clean_code(self):
         return self.cleaned_data["code"].strip().upper()
+
+
+class UserSettingsForm(forms.ModelForm):
+    class Meta:
+        model = UserSettings
+        fields = ('email_budget_alerts', 'email_family_alerts', 'email_daily_summary',
+                  'email_weekly_summary', 'email_monthly_report', 'email_payment_reminders',
+                  'email_unexpected_spending')
+        labels = {
+            'email_budget_alerts': 'Personal budget threshold alerts',
+            'email_family_alerts': 'Family budget threshold alerts',
+            'email_daily_summary': 'Daily expense summary',
+            'email_weekly_summary': 'Weekly expense summary',
+            'email_monthly_report': 'Monthly PDF report',
+            'email_payment_reminders': 'Payment reminders for recurring expenses',
+            'email_unexpected_spending': 'Unexpected high spending alerts',
+        }
+
+        

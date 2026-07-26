@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head><style>body { font-family: Inter, sans-serif; } .container { max-width:600px; margin:auto; background:#fff; padding:20px; border-radius:16px; }</style></head>
+<body>
+<div class="container">
+    <h2 style="color:#16A085;">Expense Monitor</h2>
+    <p>Hi {{ user.username }},</p>
+    <p>You spent <strong>{{ today_total|floatformat:2 }}</strong> today ({{ date }}), which is more than <strong>200%</strong> of your average daily spending ({{ avg|floatformat:2 }}).</p>
+    <p><a href="{{ site_url }}{% url 'expense_list' %}">Review your transactions</a></p>
+</div>
+</body>
+</html>

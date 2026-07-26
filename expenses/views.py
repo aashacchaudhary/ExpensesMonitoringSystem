@@ -934,3 +934,18 @@ def profile(request):
         "budget_count": Budget.objects.filter(user=request.user).count(),
     }
     return render(request, "expenses/profile.html", context)
+
+
+@login_required
+def email_preferences(request):
+    settings_obj, _ = UserSettings.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        form = UserSettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Email preferences updated.')
+            return redirect('profile')
+    else:
+        form = UserSettingsForm(instance=settings_obj)
+    return render(request, 'expenses/email_preferences.html', {'form': form})
+    
