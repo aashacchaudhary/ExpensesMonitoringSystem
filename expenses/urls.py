@@ -28,4 +28,7 @@ urlpatterns = [
     path("family/", views.family_group, name="family_group"),
     path("family/report/", views.family_report, name="family_report"),
     path("profile/", views.profile, name="profile"),
+    path("preferences/", views.email_preferences, name="email_preferences"),
+    
+
 ]

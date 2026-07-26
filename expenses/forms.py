@@ -5,7 +5,15 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Budget, Expense, FamilyBudget, FamilyGroup, RecurringExpense, SECURITY_QUESTION
+from .models import (
+    Budget,
+    Expense,
+    FamilyBudget,
+    FamilyGroup,
+    RecurringExpense,
+    SECURITY_QUESTION,
+    UserSettings,
+)
 
 
 CURRENT_YEAR = datetime.date.today().year
@@ -303,3 +311,20 @@ class SavingsGoalForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         apply_bootstrap_widgets(self.fields)
+
+
+class UserSettingsForm(forms.ModelForm):
+    class Meta:
+        model = UserSettings
+        fields = ('email_budget_alerts', 'email_family_alerts', 'email_daily_summary',
+                  'email_weekly_summary', 'email_monthly_report', 'email_payment_reminders',
+                  'email_unexpected_spending')
+        labels = {
+            'email_budget_alerts': 'Personal budget threshold alerts',
+            'email_family_alerts': 'Family budget threshold alerts',
+            'email_daily_summary': 'Daily expense summary',
+            'email_weekly_summary': 'Weekly expense summary',
+            'email_monthly_report': 'Monthly PDF report',
+            'email_payment_reminders': 'Payment reminders for recurring expenses',
+            'email_unexpected_spending': 'Unexpected high spending alerts',
+        }

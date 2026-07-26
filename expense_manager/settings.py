@@ -92,3 +92,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "home"
+
+# settings.py – add at the end
+
+# Email settings (use environment variables in production)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'expensesmonitoring@gmail.com'
+EMAIL_HOST_PASSWORD = 'tebhumhhjfccjcfw'
+DEFAULT_FROM_EMAIL = 'Expense Monitor <expensesmonitoring@gmail.com>'
+
+# Base URL for links in emails (change for production)
+SITE_URL = 'http://127.0.0.1:8000'

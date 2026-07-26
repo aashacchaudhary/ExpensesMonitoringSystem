@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><style>body { font-family: Inter, sans-serif; } .container { max-width:600px; margin:auto; background:#fff; padding:20px; border-radius:16px; }</style></head>
+<body>
+<div class="container">
+    <h2 style="color:#16A085;">Expense Monitor</h2>
+    <p>Hi {{ user.username }},</p>
+    <p>You have used <strong>{{ total|floatformat:2 }}</strong> of your monthly budget <strong>{{ budget.amount|floatformat:2 }}</strong>.</p>
+    <p style="background:#fff0ef; padding:10px; border-radius:8px;">
+        <strong>{{ percent }}% used!</strong> Remaining: {{ remaining|floatformat:2 }}
+    </p>
+    <p><a href="{{ site_url }}{% url 'dashboard' %}">View dashboard</a></p>
+</div>
+</body>
+</html>
