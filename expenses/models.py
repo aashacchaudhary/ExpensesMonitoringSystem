@@ -168,8 +168,41 @@ class FamilyMembership(models.Model):
         return f"{self.user.username} in {self.family_group.name}"
 
 
+class RecurringExpense(models.Model):
+    FREQUENCY_DAILY = "daily"
+    FREQUENCY_WEEKLY = "weekly"
+    FREQUENCY_MONTHLY = "monthly"
+    FREQUENCY_YEARLY = "yearly"
 
-# expenses/models.py – append
+    FREQUENCY_CHOICES = [
+        (FREQUENCY_DAILY, "Daily"),
+        (FREQUENCY_WEEKLY, "Weekly"),
+        (FREQUENCY_MONTHLY, "Monthly"),
+        (FREQUENCY_YEARLY, "Yearly"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="recurring_expenses")
+    title = models.CharField(max_length=150)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0.01)])
+    category = models.CharField(max_length=30, choices=Expense.CATEGORY_CHOICES, default=Expense.CATEGORY_OTHER)
+    payment_method = models.CharField(
+        max_length=30,
+        choices=Expense.PAYMENT_METHOD_CHOICES,
+        default=Expense.PAYMENT_CASH,
+    )
+    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default=FREQUENCY_MONTHLY)
+    next_due_date = models.DateField()
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["next_due_date", "title"]
+
+    def __str__(self):
+        return f"{self.title} ({self.get_frequency_display()})"
+
 
 class UserSettings(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='settings')
@@ -200,29 +233,3 @@ class AlertLog(models.Model):
 
     class Meta:
         ordering = ['-sent_at']
-
-class RecurringExpense(models.Model):
-    FREQUENCY_CHOICES = (
-        ('daily', 'Daily'),
-        ('weekly', 'Weekly'),
-        ('monthly', 'Monthly'),
-        ('yearly', 'Yearly'),
-    )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recurring_expenses')
-    title = models.CharField(max_length=150)
-    amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0.01)])
-    category = models.CharField(max_length=30, choices=Expense.CATEGORY_CHOICES, default=Expense.CATEGORY_OTHER)
-    payment_method = models.CharField(max_length=30, choices=Expense.PAYMENT_METHOD_CHOICES, default=Expense.PAYMENT_CASH)
-    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default='monthly')
-    next_due_date = models.DateField()
-    description = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['next_due_date']
-
-    def __str__(self):
-        return f"{self.title} - {self.amount} due {self.next_due_date}"
-        

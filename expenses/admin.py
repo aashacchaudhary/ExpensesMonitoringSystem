@@ -1,6 +1,16 @@
 from django.contrib import admin
 
-from .models import Budget, Expense, FamilyBudget, FamilyGroup, FamilyMembership, UserSecurityAnswer
+from .models import (
+    AlertLog,
+    Budget,
+    Expense,
+    FamilyBudget,
+    FamilyGroup,
+    FamilyMembership,
+    RecurringExpense,
+    UserSecurityAnswer,
+    UserSettings,
+)
 
 
 @admin.register(Expense)
@@ -51,8 +61,6 @@ class FamilyMembershipAdmin(admin.ModelAdmin):
     list_filter = ("family_group",)
     search_fields = ("user__username", "family_group__name", "family_group__code")
 
-from .models import UserSettings, AlertLog, RecurringExpense
-
 @admin.register(UserSettings)
 class UserSettingsAdmin(admin.ModelAdmin):
     list_display = ('user', 'email_budget_alerts', 'email_daily_summary', 'email_monthly_report')
@@ -65,5 +73,6 @@ class AlertLogAdmin(admin.ModelAdmin):
 
 @admin.register(RecurringExpense)
 class RecurringExpenseAdmin(admin.ModelAdmin):
-    list_display = ('user', 'title', 'amount', 'next_due_date', 'is_active')
-    list_filter = ('is_active', 'frequency')
+    list_display = ("title", "user", "amount", "frequency", "next_due_date", "is_active")
+    list_filter = ("frequency", "is_active", "category", "payment_method")
+    search_fields = ("title", "user__username", "user__email")

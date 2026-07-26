@@ -2,6 +2,7 @@ import calendar
 import csv
 import datetime
 import json
+import math
 from decimal import Decimal
 from urllib.parse import urlencode
 
@@ -19,6 +20,7 @@ from django.views.decorators.http import require_POST
 
 from .forms import (
     BudgetForm,
+    EMIForm,
     ExpenseForm,
     ExpenseSearchForm,
     FamilyBudgetForm,
@@ -26,12 +28,16 @@ from .forms import (
     FamilyTransactionFilterForm,
     JoinFamilyForm,
     PasswordResetEmailForm,
+    RecurringExpenseForm,
     RegisterForm,
     ReportFilterForm,
+    SavingsGoalForm,
     SecurityAnswerForm,
     StyledAuthenticationForm,
     StyledSetPasswordForm,
 )
+from .finance_utils import amortization_schedule, calculate_emi, future_value
+from .forecast import get_monthly_totals, linear_regression_forecast
 from .models import (
     Budget,
     DEFAULT_SECURITY_ANSWER,
@@ -39,6 +45,7 @@ from .models import (
     FamilyBudget,
     FamilyGroup,
     FamilyMembership,
+    RecurringExpense,
     SECURITY_QUESTION,
     UserSecurityAnswer,
 )
@@ -402,6 +409,8 @@ def dashboard(request):
     daily = daily_summary(month_expenses)
     yearly = monthly_summary_for_year(Expense.objects.filter(user=request.user), today.year)
     highest_category = categories[0] if categories else None
+    forecast_next = linear_regression_forecast(get_monthly_totals(request.user, months_back=6))
+    forecast_next_month = Decimal(str(forecast_next)).quantize(Decimal("0.01")) if forecast_next is not None else None
 
     context = {
         "total_month": total_month,
@@ -415,6 +424,7 @@ def dashboard(request):
         "expense_count": month_expenses.count(),
         "recent_expenses": Expense.objects.filter(user=request.user)[:6],
         "budget_alerts": budget_alerts(budget, total_month),
+        "forecast_next_month": forecast_next_month,
         "category_chart": chart_payload([row["label"] for row in categories], [row["value"] for row in categories]),
         "daily_chart": chart_payload([row["label"] for row in daily], [row["value"] for row in daily]),
         "monthly_chart": yearly,
@@ -489,6 +499,144 @@ def expense_delete(request, pk):
 
 
 @login_required
+def recurring_list(request):
+    recurring = RecurringExpense.objects.filter(user=request.user)
+    return render(request, "expenses/recurring_list.html", {"recurring": recurring})
+
+
+@login_required
+def recurring_create(request):
+    if request.method == "POST":
+        form = RecurringExpenseForm(request.POST)
+        if form.is_valid():
+            recurring = form.save(commit=False)
+            recurring.user = request.user
+            recurring.save()
+            messages.success(request, "Recurring expense created.")
+            return redirect("recurring_list")
+        messages.error(request, "Please correct the highlighted recurring expense fields.")
+    else:
+        form = RecurringExpenseForm(initial={"next_due_date": datetime.date.today()})
+    return render(request, "expenses/recurring_form.html", {"form": form, "action": "Create"})
+
+
+@login_required
+def recurring_edit(request, pk):
+    recurring = get_object_or_404(RecurringExpense, pk=pk, user=request.user)
+    if request.method == "POST":
+        form = RecurringExpenseForm(request.POST, instance=recurring)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Recurring expense updated.")
+            return redirect("recurring_list")
+        messages.error(request, "Please correct the highlighted recurring expense fields.")
+    else:
+        form = RecurringExpenseForm(instance=recurring)
+    return render(request, "expenses/recurring_form.html", {"form": form, "action": "Edit"})
+
+
+@login_required
+@require_POST
+def recurring_delete(request, pk):
+    recurring = get_object_or_404(RecurringExpense, pk=pk, user=request.user)
+    recurring.delete()
+    messages.success(request, "Recurring expense deleted.")
+    return redirect("recurring_list")
+
+
+@login_required
+def emi_calculator(request):
+    result = None
+    if request.method == "POST":
+        form = EMIForm(request.POST)
+        if form.is_valid():
+            principal = float(form.cleaned_data["principal"])
+            annual_rate = float(form.cleaned_data["annual_rate"])
+            months = form.cleaned_data["months"]
+            emi = calculate_emi(principal, annual_rate, months)
+            total_payment = emi * months
+            total_interest = total_payment - principal
+            schedule = amortization_schedule(principal, annual_rate, months)
+            request.session["emi_schedule"] = schedule
+            result = {
+                "emi": emi,
+                "total_payment": total_payment,
+                "total_interest": total_interest,
+                "schedule": schedule[:10],
+            }
+    else:
+        form = EMIForm(initial={"principal": 100000, "annual_rate": 8.5, "months": 60})
+    return render(request, "expenses/emi_calculator.html", {"form": form, "result": result})
+
+
+@login_required
+def emi_export(request):
+    schedule = request.session.get("emi_schedule", [])
+    if not schedule:
+        messages.error(request, "No EMI schedule available to export.")
+        return redirect("emi_calculator")
+
+    import openpyxl
+    from openpyxl.styles import Font
+
+    workbook = openpyxl.Workbook()
+    worksheet = workbook.active
+    worksheet.title = "Amortization Schedule"
+    worksheet.append(["Month", "EMI", "Interest", "Principal", "Balance"])
+    for row in schedule:
+        worksheet.append(
+            [
+                row["month"],
+                round(row["emi"], 2),
+                round(row["interest"], 2),
+                round(row["principal"], 2),
+                round(row["balance"], 2),
+            ]
+        )
+    for cell in worksheet[1]:
+        cell.font = Font(bold=True)
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    response["Content-Disposition"] = 'attachment; filename="emi-schedule.xlsx"'
+    workbook.save(response)
+    return response
+
+
+@login_required
+def savings_goal(request):
+    result = None
+    if request.method == "POST":
+        form = SavingsGoalForm(request.POST)
+        if form.is_valid():
+            present_value = float(form.cleaned_data["present_value"])
+            monthly_contribution = float(form.cleaned_data["monthly_contribution"])
+            annual_rate = float(form.cleaned_data["annual_rate"])
+            years = form.cleaned_data["years"]
+
+            future_value_initial = future_value(present_value, annual_rate, years)
+            if annual_rate > 0:
+                monthly_rate = annual_rate / 100 / 12
+                periods = years * 12
+                future_value_monthly = monthly_contribution * ((math.pow(1 + monthly_rate, periods) - 1) / monthly_rate)
+                future_value_monthly *= 1 + monthly_rate
+            else:
+                future_value_monthly = monthly_contribution * years * 12
+            total_future_value = future_value_initial + future_value_monthly
+
+            result = {
+                "future_value_initial": future_value_initial,
+                "future_value_monthly": future_value_monthly,
+                "total_future_value": total_future_value,
+            }
+    else:
+        form = SavingsGoalForm(initial={"present_value": 0, "monthly_contribution": 1000, "annual_rate": 6, "years": 10})
+
+    return render(request, "expenses/savings_goal.html", {"form": form, "result": result})
+
+
+@login_required
 def monthly_report(request):
     form = ReportFilterForm(request.GET or None)
     today = datetime.date.today()
@@ -541,6 +689,35 @@ def monthly_report(request):
             table_widths=[58, 102, 76, 70, 150, 72],
         )
         return pdf_response(f"my-reports-{year}-{month:02d}.pdf", pdf)
+
+    if request.GET.get("download") == "excel":
+        import openpyxl
+        from openpyxl.styles import Font
+
+        workbook = openpyxl.Workbook()
+        worksheet = workbook.active
+        worksheet.title = "Monthly Report"
+        worksheet.append(["Date", "Title", "Category", "Payment Method", "Description", "Amount"])
+        for expense in expenses:
+            worksheet.append(
+                [
+                    expense.date.isoformat(),
+                    expense.title,
+                    expense.category,
+                    expense.payment_method,
+                    expense.description,
+                    decimal_to_float(expense.amount),
+                ]
+            )
+        for cell in worksheet[1]:
+            cell.font = Font(bold=True)
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="my-reports-{year}-{month:02d}.xlsx"'
+        workbook.save(response)
+        return response
 
     context = {
         "form": form,
